@@ -1,0 +1,11 @@
+# Secrets
+secrets.nix
+
+# Nix
+result
+result-*
+
+# System specific
+.DS_Store
+*.swp
+*~
