@@ -5,18 +5,18 @@
 { config, pkgs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./pihole.nix
-      ./hardware-configuration.nix
-      ./prometheus.nix
-      ./homeassistant.nix
-      ./ollama.nix
-      ./qbittorrent.nix
-      ./plex.nix
-      ./secrets.nix
-      ./portainer.nix
-    ];
+  imports = [ # Include the results of the hardware scan.
+    ./nix-dev-ct.nix
+    ./pihole.nix
+    ./hardware-configuration.nix
+    ./prometheus.nix
+    ./homeassistant.nix
+    ./ollama.nix
+    ./qbittorrent.nix
+    ./plex.nix
+    ./secrets.nix
+    ./portainer.nix
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -27,7 +27,7 @@
     networkmanager.enable = true;
     nameservers = [ "100.100.100.100" "1.1.1.1" "1.0.0.1" ];
     search = [ "tail850809.ts.net" ];
-    
+
     # Bridge configuration
     interfaces = {
       enp3s0.useDHCP = false;
@@ -40,90 +40,66 @@
         }];
       };
     };
-    
-    bridges = {
-      br0 = {
-        interfaces = [ "enp3s0" "enp4s0" ];
-      };
-    };
-    
+
+    bridges = { br0 = { interfaces = [ "enp3s0" "enp4s0" ]; }; };
+
     defaultGateway = "192.168.1.1";
     useDHCP = false;
-    
+
     # Firewall configuration
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 
-      22
-      53
-      80
-      4711
-      3000
-      9090
-      9100
-      8080
-      8123
-      3001
-      8888
-      8999
-      6881
-      32400
-      3005
-      8324
-      32469
-      8000
-      9000
-      9443
-      11434
-      ]
-      ;
-      allowedUDPPorts = [ 
-      53 
-      67 
-      6881
-      1900
-      32410
-      32412
-      32413
-      32414
-      11434
+      allowedTCPPorts = [
+        22
+        53
+        80
+        4711
+        3000
+        9090
+        9100
+        8080
+        8123
+        3001
+        8888
+        8999
+        6881
+        32400
+        3005
+        8324
+        32469
+        8000
+        9000
+        9443
+        11434
       ];
+      allowedUDPPorts = [ 53 67 6881 1900 32410 32412 32413 32414 11434 ];
       interfaces.br0 = {
-        allowedTCPPorts = [ 
-	22
-	53
-	80
-	4711
-	3000
-	9090
-	9100
-	8080
-	8123
-	3001
-	8888
-	8999
-	6881
-	32400
-	3005
-	8324
-	32469
-        3389
-	4713
-	4714
-	9000
-	8000
-	9443
-	];
-        allowedUDPPorts = [ 
-	53
-	67
-	6881
-	1900
-	32410
-	32412
-	32413
-	32414
-	];
+        allowedTCPPorts = [
+          22
+          53
+          80
+          4711
+          3000
+          9090
+          9100
+          8080
+          8123
+          3001
+          8888
+          8999
+          6881
+          32400
+          3005
+          8324
+          32469
+          3389
+          4713
+          4714
+          9000
+          8000
+          9443
+        ];
+        allowedUDPPorts = [ 53 67 6881 1900 32410 32412 32413 32414 ];
       };
     };
   };
@@ -177,7 +153,7 @@
     isNormalUser = true;
     description = "Tim Oudesluijs-Zelle";
     extraGroups = [ "networkmanager" "wheel" "docker" ];
-    packages = with pkgs; [];
+    packages = with pkgs; [ ];
   };
 
   # Disable hibernation and suspend
@@ -225,7 +201,7 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-  
+
   # Enable Tailscale
   services.tailscale.enable = true;
 
