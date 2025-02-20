@@ -9,3 +9,7 @@ result-*
 .DS_Store
 *.swp
 *~
+nix-dev-ct.nix.backup
+nix-dev-ct.nix.backup2
+nix-dev-ct.nix.bak
+sapporo.nix			
