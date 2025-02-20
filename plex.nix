@@ -1,4 +1,4 @@
-{config, lib, pkgs, ...}: {
+{ config, lib, pkgs, ... }: {
   virtualisation.oci-containers = {
     backend = "docker";
     containers = {
@@ -7,20 +7,21 @@
         volumes = [
           "/home/tim/plex/config:/config"
           "/home/tim/plex/transcode:/transcode"
-          "/home/tim/media:/data"  # Adjust this path to where your media is stored
+          "/home/tim/media:/data" # Adjust this path to where your media is stored
           "/etc/localtime:/etc/localtime:ro"
         ];
         environment = {
           TZ = "Europe/Amsterdam";
-          PLEX_CLAIM = config.secrets.plex.claim;  # Add your claim token here if needed for first-time setup
+          PLEX_CLAIM =
+            config.secrets.plex.claim; # Add your claim token here if needed for first-time setup
           ADVERTISE_IP = "http://192.168.1.200:32400/";
         };
         extraOptions = [
-          "--network=host"  # Recommended for Plex to enable proper network discovery
-          "--memory=2g"
-          "--memory-swap=4g"
-          "--cpu-shares=1024"
-          "--device=/dev/dri:/dev/dri"  # If you want hardware transcoding (requires compatible GPU)
+          "--network=host" # Recommended for Plex to enable proper network discovery
+          "--memory=8g"
+          "--memory-swap=16g"
+          "--cpu-shares=2048"
+          #"--device=/dev/dri:/dev/dri" # If you want hardware transcoding (requires compatible GPU)
           "--health-cmd=curl -f http://192.168.1.200:32400/web || exit 1"
           "--health-interval=60s"
           "--health-retries=3"

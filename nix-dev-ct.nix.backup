@@ -1,0 +1,128 @@
+{ config, lib, pkgs, ... }: {
+  virtualisation.oci-containers = {
+    backend = "docker";
+    containers = {
+      sapporo = {
+        image = "nixos/nix:latest";
+        hostname = "sapporo";
+        ports = [
+          "2222:22"
+        ];
+        volumes = [
+          "/home/tim/git-workspace:/workspace"
+          "/home/tim/git-workspace-persist:/workspace-persist"
+          "/home/tim/.ssh/id_ed25519.pub:/root/.ssh/authorized_keys:ro"
+          "/home/tim/.gitconfig:/root/.gitconfig:ro"
+          "/nix/store:/nix/store"
+          "/nix/var/nix/db:/nix/var/nix/db"
+          "/nix/var/nix/daemon-socket:/nix/var/nix/daemon-socket"
+          "/var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock:ro"
+          "sapporo-ssh:/etc/ssh"
+        ];
+        environment = {
+          TZ = "Europe/Amsterdam";
+          LANG = "en_US.UTF-8";
+          GIT_SSH_COMMAND = "ssh -o StrictHostKeyChecking=no";
+          NIX_CONFIG = "experimental-features = nix-command flakes";
+          HOSTNAME = "sapporo";
+        };
+        extraOptions = [
+          "--memory=4g"
+          "--memory-swap=8g"
+          "--cpu-shares=1024"
+          "--dns=100.100.100.100"
+          "--add-host=sapporo:127.0.0.1"
+        ];
+        cmd =
+          let
+            containerPackages = with pkgs; [
+              # Basic utilities
+              coreutils
+              bash
+              git
+              gh
+              toybox
+              openssh
+              tailscale
+
+              # Development tools
+              nixfmt-rfc-style
+              nixpkgs-fmt
+              neovim
+
+              # Search and file tools
+              bat
+              jq
+              ripgrep
+              fd
+
+              # Development helpers
+              shellcheck
+              direnv
+            ];
+            packagePaths = lib.makeBinPath containerPackages;
+          in
+          [
+            "${pkgs.bash}/bin/bash"
+            "-c"
+            ''
+              # Set PATH first
+              export PATH="${packagePaths}:$PATH"
+
+              # Create required system files
+              mkdir -p /etc/ssh /run/sshd /root/.ssh
+              echo "root:x:0:0:root:/root:/bin/bash" > /etc/passwd
+              echo "root:x:0:" > /etc/group
+              echo "root:!:19123:0:99999:7:::" > /etc/shadow
+
+              # Configure SSH host keys with proper permissions
+              if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+                ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ""
+                chmod 600 /etc/ssh/ssh_host_rsa_key
+                chmod 644 /etc/ssh/ssh_host_rsa_key.pub
+              fi
+              if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
+                ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ""
+                chmod 600 /etc/ssh/ssh_host_ed25519_key
+                chmod 644 /etc/ssh/ssh_host_ed25519_key.pub
+              fi
+
+              # Set proper permissions for SSH directories
+              chmod 700 /root/.ssh
+              chmod 600 /root/.ssh/authorized_keys || true
+
+              # Configure sshd
+              echo "PermitRootLogin prohibit-password
+              PasswordAuthentication no
+              UsePAM no
+              PidFile /run/sshd/sshd.pid
+              HostKey /etc/ssh/ssh_host_rsa_key
+              HostKey /etc/ssh/ssh_host_ed25519_key" > /etc/ssh/sshd_config
+
+              # Start SSH daemon in the foreground
+              ${pkgs.openssh}/bin/sshd -D -e &
+
+              # Keep container running
+              exec sleep infinity
+            ''
+          ];
+      };
+    };
+  };
+
+  environment.systemPackages = with pkgs; [
+    (writeScriptBin "reset-sapporo" ''
+      #!${stdenv.shell}
+      set -e
+      echo "Stopping sapporo container..."
+      systemctl stop docker-sapporo
+      echo "Removing sapporo container..."
+      docker rm -f sapporo || true
+      echo "Cleaning temporary workspace..."
+      rm -rf /home/tim/git-workspace/*
+      echo "Starting fresh sapporo container..."
+      systemctl start docker-sapporo
+      echo "Container reset complete!"
+    '')
+  ];
+}

@@ -23,13 +23,13 @@
           "--device=/dev/net/tun:/dev/net/tun"
         ];
         ports = [
-          "8999:8999/tcp"  # gluetun HTTP control server
-          "8888:8888/tcp"  # qbittorrent HTTP
+          "8999:8999/tcp" # gluetun HTTP control server
+          "8888:8888/tcp" # qbittorrent HTTP
           "6881:6881/tcp"
           "6881:6881/udp"
         ];
       };
-      
+
       qbittorrent = {
         image = "lscr.io/linuxserver/qbittorrent:latest";
         dependsOn = [ "gluetun" ];
@@ -43,9 +43,7 @@
           "/home/tim/qbittorrent/config:/config"
           "/home/tim/qbittorrent/downloads:/downloads"
         ];
-        extraOptions = [
-          "--network=container:gluetun"
-        ];
+        extraOptions = [ "--network=container:gluetun" ];
       };
     };
   };

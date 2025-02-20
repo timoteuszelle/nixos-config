@@ -6,7 +6,6 @@
 
 {
   imports = [ # Include the results of the hardware scan.
-    ./nix-dev-ct.nix
     ./pihole.nix
     ./hardware-configuration.nix
     ./prometheus.nix
@@ -16,6 +15,8 @@
     ./plex.nix
     ./secrets.nix
     ./portainer.nix
+    #./saporro.nix
+    ./hokkaido.nix
   ];
 
   # Bootloader.
@@ -53,6 +54,7 @@
         22
         53
         80
+	2323
         4711
         3000
         9090
@@ -71,6 +73,13 @@
         9000
         9443
         11434
+	2222
+	9617
+        2323
+        7070
+        7443
+        4000 4001 4002
+        5000 5001
       ];
       allowedUDPPorts = [ 53 67 6881 1900 32410 32412 32413 32414 11434 ];
       interfaces.br0 = {
@@ -78,6 +87,7 @@
           22
           53
           80
+	  2323
           4711
           3000
           9090
@@ -98,9 +108,20 @@
           9000
           8000
           9443
+	  2222
+	  9617
+	  2323
+	  7070
+	  7443
+          4000 4001 4002
+          5000 5001
         ];
         allowedUDPPorts = [ 53 67 6881 1900 32410 32412 32413 32414 ];
       };
+	extraCommands = ''
+  	iptables -t nat -A PREROUTING -p tcp -i tailscale0 --dport 2323 -j DNAT --to-destination 192.168.1.202:22
+  	iptables -A FORWARD -p tcp -d 192.168.1.202 --dport 22 -j ACCEPT
+	'';
     };
   };
 
@@ -208,10 +229,15 @@
   # Enable Docker
   virtualisation.docker.enable = true;
 
+  # Enable Nix Containering
+  virtualisation.containers.enable = true;
+
   systemd.tmpfiles.rules = [
     "d /home/tim/prometheus/grafana 0755 472 472 -"
     "d /home/tim/prometheus/prometheus 0755 65534 65534 -"
     "d /home/tim/prometheus/prometheus-data 0755 65534 65534 -"
+    "d /home/tim/projects 0755 1000 1000 -"
+    "f /home/tim/.ssh/authorized_keys 0600 1000 1000 -"
   ];
 
   # This value determines the NixOS release from which the default

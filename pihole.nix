@@ -1,4 +1,4 @@
-{config, lib, pkgs, ...}: {
+{ config, lib, pkgs, ... }: {
   virtualisation.oci-containers = {
     backend = "docker";
     containers = {
@@ -13,7 +13,9 @@
           WEBPASSWORD = config.secrets.pihole.webpassword;
           DNSMASQ_USER = "root";
           # Performance optimizations
-          FTLCONF_LOCAL_IPV4 = "192.168.1.200";
+          FTLCONF_LOCAL_IPV4 = "192.168.1.200,100.104.74.13";
+	  #PIHOLE_DNS_1 = "100.100.100.100";  # Tailscale DNS
+          #PIHOLE_DNS_2 = "1.1.1.1";          # Cloudflare as backup
           PIHOLE_DNS_1 = "1.1.1.1";
           PIHOLE_DNS_2 = "1.0.0.1";
           DNSMASQ_LISTENING = "local";
@@ -26,8 +28,11 @@
           # Reverse DNS configuration
           REV_SERVER = "true";
           REV_SERVER_CIDR = "192.168.1.0/24";
-          REV_SERVER_TARGET = "192.168.1.1";  # Your router's IP address
+          REV_SERVER_TARGET = "192.168.1.1"; # Your router's IP address
           REV_SERVER_DOMAIN = "local";
+          LIGHTTPD_CONF = ''
+            server.bind = "0.0.0.0"
+          '';
         };
         extraOptions = [
           "--cap-add=NET_ADMIN"
