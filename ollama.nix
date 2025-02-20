@@ -1,15 +1,11 @@
-{...}: {
+{ ... }: {
   virtualisation.oci-containers = {
     backend = "docker";
     containers = {
       ollama = {
         image = "ollama/ollama:latest";
-        volumes = [
-          "/home/tim/ollama/data:/root/.ollama"
-        ];
-        environment = {
-          TZ = "Europe/Amsterdam";
-        };
+        volumes = [ "/home/tim/ollama/data:/root/.ollama" ];
+        environment = { TZ = "Europe/Amsterdam"; };
         extraOptions = [
           "--network=host"
           "--memory=8g"
@@ -36,9 +32,7 @@
           DEFAULT_PASSWORD = "";
           PORT = "3001";
         };
-        extraOptions = [
-          "--network=host"
-        ];
+        extraOptions = [ "--network=host" ];
         dependsOn = [ "ollama" ];
       };
     };

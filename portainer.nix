@@ -8,9 +8,7 @@
           "/var/run/docker.sock:/var/run/docker.sock"
           "/home/tim/portainer:/data"
         ];
-        environment = {
-          TZ = "Europe/Amsterdam";
-        };
+        environment = { TZ = "Europe/Amsterdam"; };
         extraOptions = [
           "--network=host"
           "--memory=512m"
@@ -22,9 +20,9 @@
   };
 
   # Open required ports in the firewall
-  networking.firewall.allowedTCPPorts = [ 
-    9000  # Portainer HTTP
-    9443  # Portainer HTTPS
-    8000  # Portainer Edge
+  networking.firewall.allowedTCPPorts = [
+    9000 # Portainer HTTP
+    9443 # Portainer HTTPS
+    8000 # Portainer Edge
   ];
 }

@@ -8,9 +8,7 @@
           "/home/tim/prometheus/prometheus:/etc/prometheus"
           "/home/tim/prometheus/prometheus-data:/prometheus"
         ];
-        environment = {
-          TZ = "Europe/Amsterdam";
-        };
+        environment = { TZ = "Europe/Amsterdam"; };
         extraOptions = [
           "--network=host"
           "--memory=1g"
@@ -25,9 +23,7 @@
 
       grafana = {
         image = "grafana/grafana:latest";
-        volumes = [
-          "/home/tim/prometheus/grafana:/var/lib/grafana"
-        ];
+        volumes = [ "/home/tim/prometheus/grafana:/var/lib/grafana" ];
         environment = {
           TZ = "Europe/Amsterdam";
           GF_SECURITY_ADMIN_PASSWORD = config.secrets.prometheus.adminPassword;
@@ -48,14 +44,8 @@
 
       node-exporter = {
         image = "prom/node-exporter:latest";
-        volumes = [
-          "/proc:/host/proc:ro"
-          "/sys:/host/sys:ro"
-          "/:/rootfs:ro"
-        ];
-        environment = {
-          TZ = "Europe/Amsterdam";
-        };
+        volumes = [ "/proc:/host/proc:ro" "/sys:/host/sys:ro" "/:/rootfs:ro" ];
+        environment = { TZ = "Europe/Amsterdam"; };
         extraOptions = [
           "--network=host"
           "--pid=host"
@@ -80,9 +70,7 @@
           "/var/lib/docker/:/var/lib/docker:ro"
           "/dev/disk/:/dev/disk:ro"
         ];
-        environment = {
-          TZ = "Europe/Amsterdam";
-        };
+        environment = { TZ = "Europe/Amsterdam"; };
         extraOptions = [
           "--network=host"
           "--memory=256m"
@@ -90,14 +78,31 @@
           "--cpu-shares=256"
         ];
       };
+
+      pihole-exporter = {
+        image = "ekofr/pihole-exporter:latest";
+        environment = {
+          PIHOLE_HOSTNAME = "localhost";
+          PIHOLE_PORT = "80";
+          PIHOLE_PASSWORD = config.secrets.pihole.webpassword;
+          PORT = "9617";
+        };
+        extraOptions = [
+          "--network=host"
+          "--memory=128m"
+          "--memory-swap=256m"
+          "--cpu-shares=128"
+        ];
+      };
     };
   };
 
   # Open required ports in the firewall
-  networking.firewall.allowedTCPPorts = [ 
+  networking.firewall.allowedTCPPorts = [
     3000  # Grafana
     9090  # Prometheus
     9100  # Node-exporter
     8080  # cAdvisor
+    9617  # Pi-hole exporter
   ];
 }
