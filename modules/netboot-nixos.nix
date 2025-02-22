@@ -36,6 +36,10 @@ let
           isNormalUser = true;
           extraGroups = [ "wheel" "networkmanager" ];
           initialPassword = config.secrets.initialPassword;
+          openssh.authorizedKeys.keys = with config.secrets.sshKeys.tim; [
+            nagoya
+            sakai
+          ];
         };
       };
 

@@ -23,6 +23,15 @@ with lib; {
     };
     tailscale = {
       authkey = "your-tailscale-authkey";
-    };   
+    };
+    # Example SSH keys structure
+    sshKeys = {
+      tim = {
+        nagoya = "your-nagoya-public-key-here";
+        sakai = "your-sakai-public-key-here";
+      };
+    };
+    # Example initial password for netboot
+    initialPassword = "your-initial-password-here";
   };
 }
