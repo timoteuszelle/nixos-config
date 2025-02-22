@@ -94,4 +94,9 @@
   systemd.tmpfiles.rules = [
     "d /var/lib/tftp 0755 root root -"
   ];
+  services.netboot-nixos = {
+    enable = true;
+    networkAddress = "192.168.1.111";
+    tftpRoot = "/var/lib/tftp";
+  };
 }
