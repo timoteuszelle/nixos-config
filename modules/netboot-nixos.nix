@@ -26,6 +26,23 @@ let
         authKeyFile = "/etc/tailscale/authkey";
       };
 
+      # Set system state version
+      system.stateVersion = "24.11";
+
+      # User configuration
+      users = {
+        mutableUsers = false;
+        users.tim = {
+          isNormalUser = true;
+          extraGroups = [ "wheel" "networkmanager" ];
+          initialPassword = config.secrets.initialPassword;
+        };
+      };
+
+      # Enable sudo for wheel group without password
+      security.sudo.wheelNeedsPassword = false;
+
+
       # Create the authkey file from secrets
       system.activationScripts.tailscaleKey = ''
         mkdir -p /etc/tailscale
@@ -42,7 +59,6 @@ let
       ];
       
       # Define users if needed
-      users.users.root.initialPassword = "nixos";
 
       # Enable automatic Tailscale connection
       systemd.services.tailscale-autoconnect = {
