@@ -7,67 +7,64 @@ let
   
   # Create a custom NixOS system configuration for netboot
   netbootSystem = pkgs.nixos {
-    system = pkgs.system;
-    modules = [
-      ({ modulesPath, ... }: {
-        imports = [
-          "${modulesPath}/installer/netboot/netboot-minimal.nix"
-          /etc/nixos/secrets.nix  # Import secrets
-        ];
-        
-        # Basic system configuration
-        boot.supportedFilesystems = [ "btrfs" "ext4" "xfs" ];
-        boot.kernelParams = cfg.kernelParams;
-        
-        # Enable SSH for remote management
-        services.openssh.enable = true;
-        
-        # Tailscale configuration
-        services.tailscale = {
-          enable = true;
-          authKeyFile = "/etc/tailscale/authkey";
-        };
+    configuration = { modulesPath, ... }: {
+      imports = [
+        "${modulesPath}/installer/netboot/netboot-minimal.nix"
+        /etc/nixos/secrets.nix  # Import secrets
+      ];
+      
+      # Basic system configuration
+      boot.supportedFilesystems = [ "btrfs" "ext4" "xfs" ];
+      boot.kernelParams = cfg.kernelParams;
+      
+      # Enable SSH for remote management
+      services.openssh.enable = true;
+      
+      # Tailscale configuration
+      services.tailscale = {
+        enable = true;
+        authKeyFile = "/etc/tailscale/authkey";
+      };
 
-        # Create the authkey file from secrets
-        system.activationScripts.tailscaleKey = ''
-          mkdir -p /etc/tailscale
-          echo ${config.secrets.tailscale.authkey} > /etc/tailscale/authkey
-          chmod 600 /etc/tailscale/authkey
+      # Create the authkey file from secrets
+      system.activationScripts.tailscaleKey = ''
+        mkdir -p /etc/tailscale
+        echo ${config.secrets.tailscale.authkey} > /etc/tailscale/authkey
+        chmod 600 /etc/tailscale/authkey
+      '';
+      
+      # Add any additional system configuration here
+      environment.systemPackages = with pkgs; [
+        vim
+        git
+        htop
+        tailscale
+      ];
+      
+      # Define users if needed
+      users.users.root.initialPassword = "nixos";
+
+      # Enable automatic Tailscale connection
+      systemd.services.tailscale-autoconnect = {
+        description = "Automatic connection to Tailscale";
+        after = [ "network-pre.target" "tailscale.service" ];
+        wants = [ "network-pre.target" "tailscale.service" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          # Wait for tailscaled to be ready
+          sleep 2
+          # Attempt to connect to tailscale
+          status="$(${pkgs.tailscale}/bin/tailscale status -json | ${pkgs.jq}/bin/jq -r .BackendState)"
+          if [ $status = "Stopped" ]; then
+            ${pkgs.tailscale}/bin/tailscale up --authkey file:/etc/tailscale/authkey
+          fi
         '';
-        
-        # Add any additional system configuration here
-        environment.systemPackages = with pkgs; [
-          vim
-          git
-          htop
-          tailscale
-        ];
-        
-        # Define users if needed
-        users.users.root.initialPassword = "nixos";
-
-        # Enable automatic Tailscale connection
-        systemd.services.tailscale-autoconnect = {
-          description = "Automatic connection to Tailscale";
-          after = [ "network-pre.target" "tailscale.service" ];
-          wants = [ "network-pre.target" "tailscale.service" ];
-          wantedBy = [ "multi-user.target" ];
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-          };
-          script = ''
-            # Wait for tailscaled to be ready
-            sleep 2
-            # Attempt to connect to tailscale
-            status="$(${pkgs.tailscale}/bin/tailscale status -json | ${pkgs.jq}/bin/jq -r .BackendState)"
-            if [ $status = "Stopped" ]; then
-              ${pkgs.tailscale}/bin/tailscale up --authkey file:/etc/tailscale/authkey
-            fi
-          '';
-        };
-      })
-    ];
+      };
+    };
   };
   
   # Extract paths for kernel and initrd
