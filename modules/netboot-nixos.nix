@@ -103,6 +103,7 @@ in {
       "d ${cfg.tftpRoot}/nixos 0755 root root -"
       "L+ ${cfg.tftpRoot}/nixos/bzImage - - - - ${kernel}"
       "L+ ${cfg.tftpRoot}/nixos/initrd - - - - ${initrd}"
+      "L+ ${cfg.tftpRoot}/boot.ipxe - - - - /etc/tftp/boot.ipxe"
     ];
 
     environment.etc."tftp/boot.ipxe".text = ''
@@ -130,10 +131,6 @@ in {
       shell
       goto start
     '';
-
-    systemd.tmpfiles.rules = [
-      "L+ ${cfg.tftpRoot}/boot.ipxe - - - - /etc/tftp/boot.ipxe"
-    ];
 
     # Required services configuration
     services.nginx.virtualHosts."netboot" = {
