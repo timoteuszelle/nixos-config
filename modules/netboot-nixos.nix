@@ -6,7 +6,7 @@ let
   cfg = config.services.netboot-nixos;
   
   # Create a custom NixOS system configuration for netboot
-  netbootSystem = pkgs.nixos {
+  netbootSystem = (import "${pkgs.path}/nixos" {
     configuration = { modulesPath, ... }: {
       imports = [
         "${modulesPath}/installer/netboot/netboot-minimal.nix"
@@ -65,11 +65,11 @@ let
         '';
       };
     };
-  };
+  }).config.system.build;
   
   # Extract paths for kernel and initrd
-  kernel = "${netbootSystem.config.system.build.kernel}/bzImage";
-  initrd = "${netbootSystem.config.system.build.netbootRamdisk}/initrd";
+  kernel = "${netbootSystem.kernel}/bzImage";
+  initrd = "${netbootSystem.netbootRamdisk}/initrd";
   
 in {
   options.services.netboot-nixos = {
@@ -119,7 +119,7 @@ in {
 
       :nixos
       echo Booting NixOS...
-      kernel http://${cfg.networkAddress}/nixos/bzImage init=${netbootSystem.config.system.build.toplevel}/init ${toString cfg.kernelParams}
+      kernel http://${cfg.networkAddress}/nixos/bzImage init=${netbootSystem.toplevel}/init ${toString cfg.kernelParams}
       initrd http://${cfg.networkAddress}/nixos/initrd
       boot
 
