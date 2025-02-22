@@ -1,4 +1,5 @@
 { config, pkgs, ... }: {
+  imports = [ ./modules/netboot-nixos.nix ];
   containers.netboot = {
     autoStart = true;
     ephemeral = true;
