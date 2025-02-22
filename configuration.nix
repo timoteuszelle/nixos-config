@@ -16,6 +16,7 @@
     ./secrets.nix
     ./portainer.nix
     #./saporro.nix
+    ./netboot.nix
     ./hokkaido.nix
   ];
 
@@ -55,7 +56,7 @@
         53
         80
 	2323
-        4711
+        4711 4011
         3000
         9090
         9100
@@ -81,14 +82,14 @@
         4000 4001 4002
         5000 5001
       ];
-      allowedUDPPorts = [ 53 67 6881 1900 32410 32412 32413 32414 11434 ];
+      allowedUDPPorts = [ 53 67 69 6881 1900 32410 32412 32413 32414 11434 ];
       interfaces.br0 = {
         allowedTCPPorts = [
           22
           53
           80
 	  2323
-          4711
+          4711 4011
           3000
           9090
           9100
@@ -116,7 +117,7 @@
           4000 4001 4002
           5000 5001
         ];
-        allowedUDPPorts = [ 53 67 6881 1900 32410 32412 32413 32414 ];
+        allowedUDPPorts = [ 53 67 69 4011 6881 1900 32410 32412 32413 32414 ];
       };
 	extraCommands = ''
   	iptables -t nat -A PREROUTING -p tcp -i tailscale0 --dport 2323 -j DNAT --to-destination 192.168.1.202:22
