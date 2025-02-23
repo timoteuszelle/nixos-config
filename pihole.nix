@@ -7,8 +7,8 @@
         volumes = [
           "/home/tim/pihole/etc-pihole:/etc/pihole"
           "/home/tim/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
-          # Add netboot files directory
-          "/home/tim/netboot:/netboot"
+          # Use the correct TFTP root directory
+          "/var/lib/tftp:/var/lib/tftp:ro"
         ];
         environment = {
           TZ = "Europe/Amsterdam";
@@ -36,30 +36,6 @@
           DHCP_END = "192.168.1.199";
           DHCP_ROUTER = "192.168.1.1";
           DHCP_LEASETIME = "24";
-          # Custom dnsmasq configuration embedded directly
-          DNSMASQ_USER_CONF = ''
-            # Enable TFTP server
-            enable-tftp
-            tftp-root=/netboot
-            
-            # Configure PXE boot options
-            dhcp-boot=pxelinux.0,pxeserver,192.168.1.200
-            
-            # Additional DHCP options for PXE boot
-            dhcp-option=66,192.168.1.200
-            pxe-service=x86PC,"PXE Boot",pxelinux
-            
-            # Logging configuration
-            log-queries
-            log-dhcp
-            
-            # Custom cache settings
-            cache-size=10000
-            
-            # Interface specific settings
-            interface=eth0
-            bind-interfaces
-          '';
           LIGHTTPD_CONF = ''
             server.bind = "0.0.0.0"
           '';
@@ -86,5 +62,39 @@
         ];
       };
     };
+  };
+
+  # Create the 05-pihole-custom.conf file with proper priority
+  system.activationScripts.piholeDnsmasqConf = {
+    text = ''
+      mkdir -p /home/tim/pihole/etc-dnsmasq.d
+      cat > /home/tim/pihole/etc-dnsmasq.d/05-pihole-custom.conf << 'EOF'
+      # Enable TFTP server
+      enable-tftp
+      tftp-root=/var/lib/tftp
+
+      # Configure PXE boot options
+      dhcp-match=set:ipxe,175
+      dhcp-match=set:bios,option:client-arch,0
+      dhcp-boot=tag:bios,/ipxe.kpxe
+      dhcp-boot=tag:ipxe,http://192.168.1.111/boot.ipxe
+
+      # Additional DHCP options for PXE boot
+      dhcp-option=66,192.168.1.111
+      dhcp-option=67,boot.ipxe
+
+      # Logging configuration
+      log-queries
+      log-dhcp
+
+      # Custom cache settings
+      cache-size=10000
+
+      # Interface specific settings
+      interface=eth0
+      bind-interfaces
+      EOF
+    '';
+    deps = [];
   };
 }
