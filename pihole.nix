@@ -36,8 +36,30 @@
           DHCP_END = "192.168.1.199";
           DHCP_ROUTER = "192.168.1.1";
           DHCP_LEASETIME = "24";
-          # Custom dnsmasq options for netboot with explicit configuration file
-          DNSMASQ_CONF_FILE = "/etc/dnsmasq.d/05-pihole-custom.conf";
+          # Custom dnsmasq configuration embedded directly
+          DNSMASQ_USER_CONF = ''
+            # Enable TFTP server
+            enable-tftp
+            tftp-root=/netboot
+            
+            # Configure PXE boot options
+            dhcp-boot=pxelinux.0,pxeserver,192.168.1.200
+            
+            # Additional DHCP options for PXE boot
+            dhcp-option=66,192.168.1.200
+            pxe-service=x86PC,"PXE Boot",pxelinux
+            
+            # Logging configuration
+            log-queries
+            log-dhcp
+            
+            # Custom cache settings
+            cache-size=10000
+            
+            # Interface specific settings
+            interface=eth0
+            bind-interfaces
+          '';
           LIGHTTPD_CONF = ''
             server.bind = "0.0.0.0"
           '';
