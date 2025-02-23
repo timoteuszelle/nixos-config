@@ -36,13 +36,8 @@
           DHCP_END = "192.168.1.199";
           DHCP_ROUTER = "192.168.1.1";
           DHCP_LEASETIME = "24";
-          # Custom dnsmasq options for netboot
-          DNSMASQ_USER_OPTS = ''
-            dhcp-boot=undionly.kpxe,netboot,192.168.1.111
-            dhcp-range=192.168.1.0,proxy
-            dhcp-option=66,192.168.1.111
-            dhcp-option=67,undionly.kpxe
-          '';
+          # Custom dnsmasq options for netboot with explicit configuration file
+          DNSMASQ_CONF_FILE = "/etc/dnsmasq.d/05-pihole-custom.conf";
           LIGHTTPD_CONF = ''
             server.bind = "0.0.0.0"
           '';
