@@ -15,7 +15,6 @@
     ./plex.nix
     ./secrets.nix
     ./portainer.nix
-    #./saporro.nix
     ./netboot.nix
     ./hokkaido.nix
   ];
@@ -174,7 +173,7 @@
   users.users.tim = {
     isNormalUser = true;
     description = "Tim Oudesluijs-Zelle";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" "libvirtd" ];
     packages = with pkgs; [ ];
   };
 
@@ -244,5 +243,13 @@
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken.
+  # Enable virtualization
+  #virtualisation.libvirtd.enable = true;
+  #virtualisation.libvirtd.qemu = {
+  #  ovmf.enable = true;
+  #  swtpm.enable = true;
+  #};
+  #programs.virt-manager.enable = true;
+
   system.stateVersion = "24.11";
 }
