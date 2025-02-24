@@ -62,7 +62,7 @@
       cat > /home/tim/pihole/etc-dnsmasq.d/02-pihole-dhcp.conf << EOF
       dhcp-range=192.168.1.100,192.168.1.199,24h
       dhcp-option=3,192.168.1.1
-      dhcp-boot=ipxe.efi,netboot,192.168.1.111
+      dhcp-boot=undionly.kpxe,netboot,192.168.1.111
       dhcp-option=66,192.168.1.111
       EOF
       
