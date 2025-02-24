@@ -7,14 +7,12 @@
         volumes = [
           "/home/tim/pihole/etc-pihole:/etc/pihole"
           "/home/tim/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
-          # Use the correct TFTP root directory
-          "/var/lib/tftp:/var/lib/tftp:ro"
+          "/home/tim/netboot:/netboot"
         ];
         environment = {
           TZ = "Europe/Amsterdam";
           WEBPASSWORD = config.secrets.pihole.webpassword;
           DNSMASQ_USER = "root";
-          # Performance optimizations
           FTLCONF_LOCAL_IPV4 = "192.168.1.200,100.104.74.13";
           PIHOLE_DNS_1 = "1.1.1.1";
           PIHOLE_DNS_2 = "1.0.0.1";
@@ -25,17 +23,12 @@
           DNSMASQ_CACHE_SIZE = "10000";
           WEBUIBOXEDLAYOUT = "traditional";
           BLOCKING_ENABLED = "true";
-          # Reverse DNS configuration
           REV_SERVER = "true";
           REV_SERVER_CIDR = "192.168.1.0/24";
           REV_SERVER_TARGET = "192.168.1.1";
           REV_SERVER_DOMAIN = "local";
-          # Add DHCP and netboot configuration
           DHCP_ACTIVE = "true";
-          DHCP_START = "192.168.1.100";
-          DHCP_END = "192.168.1.199";
-          DHCP_ROUTER = "192.168.1.1";
-          DHCP_LEASETIME = "24";
+          PIHOLE_SKIP_DHCP_CONFIG = "true";
           LIGHTTPD_CONF = ''
             server.bind = "0.0.0.0"
           '';
@@ -53,48 +46,23 @@
           "--health-retries=3"
           "--health-timeout=5s"
         ];
-        ports = [
-          #"53:53/tcp"
-          #"53:53/udp"
-          #"67:67/udp"
-          #"80:80/tcp"
-          #"4711:4711/tcp"
-        ];
+        ports = [];
+        preStart = ''
+          mkdir -p /home/tim/pihole/etc-dnsmasq.d
+          cat > /home/tim/pihole/etc-dnsmasq.d/02-pihole-dhcp.conf << EEOF
+          dhcp-range=192.168.1.100,192.168.1.199,24h
+          dhcp-option=3,192.168.1.1
+          dhcp-boot=ipxe.efi,netboot,192.168.1.111
+          dhcp-option=66,192.168.1.111
+          enable-tftp
+          tftp-root=/netboot
+          EEOF
+          
+          # Ensure proper permissions
+          chown -R 0:0 /home/tim/pihole/etc-dnsmasq.d
+          chmod 644 /home/tim/pihole/etc-dnsmasq.d/*.conf
+        '';
       };
     };
-  };
-
-  # Create the 05-pihole-custom.conf file with proper priority
-  system.activationScripts.piholeDnsmasqConf = {
-    text = ''
-      mkdir -p /home/tim/pihole/etc-dnsmasq.d
-      cat > /home/tim/pihole/etc-dnsmasq.d/05-pihole-custom.conf << 'EOF'
-      # Enable TFTP server
-      enable-tftp
-      tftp-root=/var/lib/tftp
-
-      # Configure PXE boot options
-      dhcp-match=set:ipxe,175
-      dhcp-match=set:bios,option:client-arch,0
-      dhcp-boot=tag:bios,/ipxe.kpxe
-      dhcp-boot=tag:ipxe,http://192.168.1.111/boot.ipxe
-
-      # Additional DHCP options for PXE boot
-      dhcp-option=66,192.168.1.111
-      dhcp-option=67,boot.ipxe
-
-      # Logging configuration
-      log-queries
-      log-dhcp
-
-      # Custom cache settings
-      cache-size=10000
-
-      # Interface specific settings
-      interface=eth0
-      bind-interfaces
-      EOF
-    '';
-    deps = [];
   };
 }
