@@ -7,7 +7,6 @@
         volumes = [
           "/home/tim/pihole/etc-pihole:/etc/pihole"
           "/home/tim/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
-          "/home/tim/netboot:/netboot"
         ];
         environment = {
           TZ = "Europe/Amsterdam";
@@ -47,22 +46,33 @@
           "--health-timeout=5s"
         ];
         ports = [];
-        preStart = ''
-          mkdir -p /home/tim/pihole/etc-dnsmasq.d
-          cat > /home/tim/pihole/etc-dnsmasq.d/02-pihole-dhcp.conf << EEOF
-          dhcp-range=192.168.1.100,192.168.1.199,24h
-          dhcp-option=3,192.168.1.1
-          dhcp-boot=ipxe.efi,netboot,192.168.1.111
-          dhcp-option=66,192.168.1.111
-          enable-tftp
-          tftp-root=/netboot
-          EEOF
-          
-          # Ensure proper permissions
-          chown -R 0:0 /home/tim/pihole/etc-dnsmasq.d
-          chmod 644 /home/tim/pihole/etc-dnsmasq.d/*.conf
-        '';
       };
+    };
+  };
+
+  systemd.services.config = {
+    description = "Configure Pi-hole DHCP and netboot settings";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "docker.service" ];
+    before = [ "docker-container@pihole.service" ];
+    requisite = [ "docker.service" ];
+    path = [ pkgs.coreutils ];
+    script = ''
+      mkdir -p /home/tim/pihole/etc-dnsmasq.d
+      cat > /home/tim/pihole/etc-dnsmasq.d/02-pihole-dhcp.conf << EOF
+      dhcp-range=192.168.1.100,192.168.1.199,24h
+      dhcp-option=3,192.168.1.1
+      dhcp-boot=ipxe.efi,netboot,192.168.1.111
+      dhcp-option=66,192.168.1.111
+      EOF
+      
+      chown -R 0:0 /home/tim/pihole/etc-dnsmasq.d
+      chmod 644 /home/tim/pihole/etc-dnsmasq.d/*.conf
+    '';
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "root";
     };
   };
 }
