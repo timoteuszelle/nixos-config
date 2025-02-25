@@ -7,38 +7,30 @@
         volumes = [
           "/home/tim/plex/config:/config"
           "/home/tim/plex/transcode:/transcode"
-          "/home/tim/media:/data" # Adjust this path to where your media is stored
+          "/home/tim/media:/data"
           "/etc/localtime:/etc/localtime:ro"
+          "/dev/dri:/dev/dri"
         ];
         environment = {
           TZ = "Europe/Amsterdam";
-          PLEX_CLAIM =
-            config.secrets.plex.claim; # Add your claim token here if needed for first-time setup
+          PLEX_CLAIM = config.secrets.plex.claim;
           ADVERTISE_IP = "http://192.168.1.200:32400/";
+          PLEX_MEDIA_SERVER_USE_VAAPI = "1"
         };
         extraOptions = [
-          "--network=host" # Recommended for Plex to enable proper network discovery
-          "--memory=8g"
-          "--memory-swap=16g"
-          "--cpu-shares=2048"
-          #"--device=/dev/dri:/dev/dri" # If you want hardware transcoding (requires compatible GPU)
+          "--network=host"
+          "--memory=12g"
+          "--memory-swap=24g"
+          "--cpu-shares=4096"
+          "--device=/dev/dri:/dev/dri"
+          "--privileged"
+          "--group-add=video"
           "--health-cmd=curl -f http://192.168.1.200:32400/web || exit 1"
           "--health-interval=60s"
           "--health-retries=3"
           "--health-timeout=5s"
         ];
-        # Ports commented out since using host network mode
-        ports = [
-          # "32400:32400"  # Primary Plex port
-          # "3005:3005"    # Plex Companion
-          # "8324:8324"    # Roku via Plex Companion
-          # "32469:32469"  # Plex DLNA Server
-          # "1900:1900/udp"  # Plex DLNA Server
-          # "32410:32410/udp"  # GDM network discovery
-          # "32412:32412/udp"  # GDM network discovery
-          # "32413:32413/udp"  # GDM network discovery
-          # "32414:32414/udp"  # GDM network discovery
-        ];
+        ports = [];
       };
     };
   };

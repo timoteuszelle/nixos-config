@@ -19,6 +19,18 @@
     ./hokkaido.nix
   ];
 
+  # AMD GPU support
+  hardware.opengl = {
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      rocm-opencl-icd
+      rocm-opencl-runtime
+      amdvlk
+    ];
+  };
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -54,7 +66,7 @@
         22
         53
         80
-	2323
+        2323
         4711 4011
         3000
         9090
@@ -73,8 +85,8 @@
         9000
         9443
         11434
-	2222
-	9617
+        2222
+        9617
         2323
         7070
         7443
@@ -87,7 +99,7 @@
           22
           53
           80
-	  2323
+          2323
           4711 4011
           3000
           9090
@@ -108,20 +120,20 @@
           9000
           8000
           9443
-	  2222
-	  9617
-	  2323
-	  7070
-	  7443
+          2222
+          9617
+          2323
+          7070
+          7443
           4000 4001 4002
           5000 5001
         ];
         allowedUDPPorts = [ 53 67 69 4011 6881 1900 32410 32412 32413 32414 ];
       };
-	extraCommands = ''
-  	iptables -t nat -A PREROUTING -p tcp -i tailscale0 --dport 2323 -j DNAT --to-destination 192.168.1.202:22
-  	iptables -A FORWARD -p tcp -d 192.168.1.202 --dport 22 -j ACCEPT
-	'';
+      extraCommands = ''
+        iptables -t nat -A PREROUTING -p tcp -i tailscale0 --dport 2323 -j DNAT --to-destination 192.168.1.202:22
+        iptables -A FORWARD -p tcp -d 192.168.1.202 --dport 22 -j ACCEPT
+      '';
     };
   };
 
@@ -173,7 +185,7 @@
   users.users.tim = {
     isNormalUser = true;
     description = "Tim Oudesluijs-Zelle";
-    extraGroups = [ "networkmanager" "wheel" "docker" "libvirtd" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" "libvirtd" "video" "render" ];
     packages = with pkgs; [ ];
   };
 
@@ -239,17 +251,6 @@
     "d /home/tim/projects 0755 1000 1000 -"
     "f /home/tim/.ssh/authorized_keys 0600 1000 1000 -"
   ];
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken.
-  # Enable virtualization
-  #virtualisation.libvirtd.enable = true;
-  #virtualisation.libvirtd.qemu = {
-  #  ovmf.enable = true;
-  #  swtpm.enable = true;
-  #};
-  #programs.virt-manager.enable = true;
 
   system.stateVersion = "24.11";
 }
