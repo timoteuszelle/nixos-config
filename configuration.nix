@@ -17,6 +17,7 @@
     ./portainer.nix
     ./netboot.nix
     ./hokkaido.nix
+    ./nextcloud.nix
   ];
 
   # AMD GPU support
@@ -72,7 +73,7 @@
         8080
         8123
         3001
-        8888
+        8081 8888
         8999
         6881
         32400
@@ -105,7 +106,7 @@
           8080
           8123
           3001
-          8888
+          8081 8888
           8999
           6881
           32400
@@ -248,6 +249,9 @@
     "d /home/tim/prometheus/prometheus-data 0755 65534 65534 -"
     "d /home/tim/projects 0755 1000 1000 -"
     "f /home/tim/.ssh/authorized_keys 0600 1000 1000 -"
+    # Nextcloud storage
+    "d /srv/nextcloud/data 0770 nextcloud nextcloud -"
+    "d /srv/nextcloud/config 0770 nextcloud nextcloud -"
   ];
 
   system.stateVersion = "24.11";
