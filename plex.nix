@@ -15,7 +15,7 @@
           TZ = "Europe/Amsterdam";
           PLEX_CLAIM = config.secrets.plex.claim;
           ADVERTISE_IP = "http://192.168.1.200:32400/";
-          PLEX_MEDIA_SERVER_USE_VAAPI = "1"
+          PLEX_MEDIA_SERVER_USE_VAAPI = "1";
         };
         extraOptions = [
           "--network=host"
