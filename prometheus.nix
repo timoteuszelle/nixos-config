@@ -94,6 +94,71 @@
           "--cpu-shares=128"
         ];
       };
+      
+      nextcloud-exporter = {
+        image = "xperimental/nextcloud-exporter:latest";
+        environment = {
+          NEXTCLOUD_SERVER = "http://localhost:8081";
+          NEXTCLOUD_USERNAME = "admin";
+          NEXTCLOUD_PASSWORD = config.secrets.nextcloud.adminPassword;
+          # Optionally set TLS_SKIP_VERIFY=true if using self-signed certs
+        };
+        extraOptions = [
+          "--network=host"
+          "--memory=128m"
+          "--memory-swap=256m"
+          "--cpu-shares=128"
+        ];
+      };
+
+      plex-exporter = {
+  image = "arnarg/plex_exporter:latest";
+  environment = {
+    PLEX_URL = "http://localhost:32400";
+    PLEX_TOKEN = config.secrets.plex.token; # You'll need to create this secret
+    LISTEN_ADDR = ":9594";
+  };
+  extraOptions = [
+    "--network=host"
+    "--memory=128m"
+    "--memory-swap=256m"
+    "--cpu-shares=128"
+  ];
+};
+
+qbittorrent-exporter = {
+  image = "esanchezm/prometheus-qbittorrent-exporter:latest";
+  environment = {
+    QBITTORRENT_HOST = "localhost";
+    QBITTORRENT_PORT = "8080"; # Adjust port if needed
+    QBITTORRENT_USER = "admin"; # Replace with your username
+    QBITTORRENT_PASSWORD = config.secrets.qbittorrent.password; # Create this secret
+    PORT = "9567"; # Port for the exporter
+  };
+  extraOptions = [
+    "--network=host"
+    "--memory=128m"
+    "--memory-swap=256m"
+    "--cpu-shares=128"
+  ];
+};
+
+# that will at least check if the service is up
+ollama-prober = {
+  image = "prom/blackbox-exporter:latest";
+  volumes = [
+    "/home/tim/prometheus/blackbox.yml:/config/blackbox.yml"
+  ];
+  extraOptions = [
+    "--network=host"
+    "--memory=128m"
+    "--memory-swap=256m"
+    "--cpu-shares=128"
+  ];
+  cmd = [
+    "--config.file=/config/blackbox.yml"
+  ];
+};
     };
   };
 
@@ -104,5 +169,9 @@
     9100  # Node-exporter
     8080  # cAdvisor
     9617  # Pi-hole exporter
+    9205  # nextcloud exporter
+    9594  # Plex exporter 
+    9567  # QBittorrent exporter
+    9115  # Blackbox exporter for Ollama
   ];
 }

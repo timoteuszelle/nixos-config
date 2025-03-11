@@ -27,7 +27,7 @@
           REV_SERVER_TARGET = "192.168.1.1";
           REV_SERVER_DOMAIN = "local";
           DHCP_ACTIVE = "false";
-          PIHOLE_SKIP_DHCP_CONFIG = "true";
+          PIHOLE_SKIP_DHCP_CONFIG = "false";
           LIGHTTPD_CONF = ''
             server.bind = "0.0.0.0"
           '';
