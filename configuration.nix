@@ -18,6 +18,7 @@
     ./netboot.nix
     ./hokkaido.nix
     ./nextcloud.nix
+    ./ddns.nix
   ];
 
   # AMD GPU support
