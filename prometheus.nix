@@ -98,13 +98,13 @@
       nextcloud-exporter = {
         image = "xperimental/nextcloud-exporter:latest";
         environment = {
-          NEXTCLOUD_SERVER = "http://localhost:8081";
+          NEXTCLOUD_SERVER = "http://nextcloud:80";
           NEXTCLOUD_USERNAME = "admin";
           NEXTCLOUD_PASSWORD = config.secrets.nextcloud.adminPassword;
           # Optionally set TLS_SKIP_VERIFY=true if using self-signed certs
         };
         extraOptions = [
-          "--network=host"
+          "--network=nextcloud_network"
           "--memory=128m"
           "--memory-swap=256m"
           "--cpu-shares=128"
@@ -150,7 +150,7 @@ ollama-prober = {
     "/home/tim/prometheus/blackbox.yml:/config/blackbox.yml"
   ];
   extraOptions = [
-    "--network=host"
+    "--network=nextcloud_network"
     "--memory=128m"
     "--memory-swap=256m"
     "--cpu-shares=128"
@@ -172,6 +172,5 @@ ollama-prober = {
     9205  # nextcloud exporter
     9594  # Plex exporter 
     9567  # QBittorrent exporter
-    9115  # Blackbox exporter for Ollama
   ];
 }
